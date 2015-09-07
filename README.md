@@ -1,5 +1,12 @@
+[![Build Status](https://travis-ci.org/fernandezvara/apimock.svg?branch=master)](https://travis-ci.org/fernandezvara/apimock)
+[![GoDoc](https://godoc.org/github.com/fernandezvara/apimock?status.png)](https://godoc.org/github.com/fernandezvara/apimock)
+[![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/fernandezvara/apimock)
+[![Coverage Status](https://coveralls.io/repos/fernandezvara/apimock/badge.svg?branch=master)](https://coveralls.io/r/fernandezvara/apimock?branch=master)
+
 # apimock
-Simple API mocker helper for tests
+
+*Simple API mocker helper for tests*
+
 
 This library allows to mock easily any API to use in our test.
 
