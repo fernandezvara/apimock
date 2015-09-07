@@ -25,7 +25,6 @@ type APIMock struct {
 	Log         *logrus.Logger
 	Type        string
 	URIMocks    []*URIMock
-	URL         string
 	server      *httptest.Server
 }
 
@@ -47,17 +46,19 @@ type ErrorMessage struct {
 func (a *APIMock) Start() {
 	router := a.createRouter()
 	a.server = httptest.NewServer(router)
-	a.URL = a.server.URL
-
 	a.Log.WithFields(logrus.Fields{"service": "apiMock"}).Infoln("Listening: " + a.server.Listener.Addr().String())
 	a.Log.WithFields(logrus.Fields{"service": "apiMock"}).Infoln("API: Started.")
 }
 
 // Stop finishes listening
 func (a *APIMock) Stop() {
-	a.URL = ""
 	a.server.Close()
 	a.Log.WithFields(logrus.Fields{"service": "apiMock"}).Infoln("API: Stopped.")
+}
+
+// URL returns the listener address
+func (a *APIMock) URL() string {
+	return a.server.URL
 }
 
 // AddMock adds a new mock route/Response
@@ -81,6 +82,11 @@ func (a *APIMock) createRouter() *mux.Router {
 		wrap := func(w http.ResponseWriter, r *http.Request) {
 			a.Log.WithFields(logrus.Fields{"service": "apiMock", "method": r.Method, "uri": r.RequestURI, "ip": r.RemoteAddr}).Info("HTTP request received")
 			writeHeaders(w, r, a.CORSEnabled, a.Type, lStatusCode)
+			switch val := lResponse.(type) {
+			case []byte:
+				w.Write(val)
+				return
+			}
 
 			if a.Type == "json" {
 				json.NewEncoder(w).Encode(lResponse)

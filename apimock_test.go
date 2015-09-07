@@ -51,6 +51,13 @@ var structMock2 = &URIMock{
 	},
 }
 
+var structRAW = &URIMock{
+	Method:     "GET",
+	URI:        "/raw",
+	StatusCode: http.StatusOK,
+	Response:   []byte(`{"name":"someName","surname":"someSurname"}`),
+}
+
 func TestClient(t *testing.T) {
 	assert.Panics(t, func() {
 		NewAPIMock(true, logrus.New(), "panic!")
@@ -68,14 +75,13 @@ func TestClientStartStop(t *testing.T) {
 	api.AddMock(helloMock)
 	assert.Len(t, api.URIMocks, 1, "It must have 1 URIMocks defined")
 	api.Start()
-	assert.NotEmpty(t, api.URL, "it must have an URL")
+	assert.NotEmpty(t, api.URL(), "it must have an URL")
 
-	response, res := httpCall("GET", fmt.Sprintf("%s/hello", api.URL))
+	response, res := httpCall("GET", fmt.Sprintf("%s/hello", api.URL()))
 	assert.Equal(t, "\"world\"\n", string(response), "It must return the expected result")
 	assert.Equal(t, 200, res.StatusCode, "It must have status code 200")
 	assert.Equal(t, "*", res.Header.Get("Access-Control-Allow-Origin"), "It must have CORS Headers")
 	api.Stop()
-	assert.Equal(t, "", api.URL, "URL must be empty")
 }
 
 func TestClientNoCORS(t *testing.T) {
@@ -83,7 +89,7 @@ func TestClientNoCORS(t *testing.T) {
 	api.AddMock(helloMock)
 	assert.Len(t, api.URIMocks, 1, "It must have 1 URIMocks defined")
 	api.Start()
-	response, res := httpCall("GET", fmt.Sprintf("%s/hello", api.URL))
+	response, res := httpCall("GET", fmt.Sprintf("%s/hello", api.URL()))
 	assert.Equal(t, "\"world\"\n", string(response), "It must return the expected result")
 	assert.Equal(t, 200, res.StatusCode, "It must have status code 200")
 	assert.Empty(t, res.Header.Get("Access-Control-Allow-Origin"), "Header must be nil if CORS disabled")
@@ -96,7 +102,7 @@ func TestClientXML(t *testing.T) {
 	assert.Len(t, api.URIMocks, 1, "It must have 1 URIMocks defined")
 	api.Start()
 	assert.Equal(t, api.Type, "xml", "Type must be 'xml'")
-	response, res := httpCall("GET", fmt.Sprintf("%s/hello", api.URL))
+	response, res := httpCall("GET", fmt.Sprintf("%s/hello", api.URL()))
 	assert.Equal(t, "<string>world</string>", string(response), "It must return the expected result")
 	assert.Equal(t, 200, res.StatusCode, "It must have status code 200")
 	api.Stop()
@@ -107,7 +113,7 @@ func TestClientOptions(t *testing.T) {
 	api.AddMock(helloMock)
 	assert.Len(t, api.URIMocks, 1, "It must have 1 URIMocks defined")
 	api.Start()
-	_, res := httpCall("OPTIONS", fmt.Sprintf("%s/hello", api.URL))
+	_, res := httpCall("OPTIONS", fmt.Sprintf("%s/hello", api.URL()))
 	assert.Equal(t, 200, res.StatusCode, "It must have status code 200")
 	api.Stop()
 }
@@ -117,7 +123,7 @@ func TestClientHTTPNotFound(t *testing.T) {
 	api.AddMock(helloMock)
 	assert.Len(t, api.URIMocks, 1, "It must have 1 URIMocks defined")
 	api.Start()
-	_, res := httpCall("GET", fmt.Sprintf("%s/hello-not-found", api.URL))
+	_, res := httpCall("GET", fmt.Sprintf("%s/hello-not-found", api.URL()))
 	assert.Equal(t, 404, res.StatusCode, "It must have status code 404")
 	api.Stop()
 }
@@ -138,17 +144,17 @@ func TestClientStruct(t *testing.T) {
 		var s testStruct
 		switch _type {
 		case "json":
-			response11, _ := httpCall("GET", fmt.Sprintf("%s/struct1", api.URL))
+			response11, _ := httpCall("GET", fmt.Sprintf("%s/struct1", api.URL()))
 			assert.Equal(t, "{\"a\":\"aaa\",\"b\":111}\n", string(response11), "Response not expected")
 
-			response12, _ := httpCall("GET", fmt.Sprintf("%s/struct2", api.URL))
+			response12, _ := httpCall("GET", fmt.Sprintf("%s/struct2", api.URL()))
 			assert.Equal(t, "{\"a\":\"aaa\"}\n", string(response12), "Response not expected")
 			err = json.Unmarshal(response11, &s)
 		case "xml":
-			response11, _ := httpCall("GET", fmt.Sprintf("%s/struct1", api.URL))
+			response11, _ := httpCall("GET", fmt.Sprintf("%s/struct1", api.URL()))
 			assert.Equal(t, "<testStruct><a>aaa</a><b>111</b></testStruct>", string(response11), "Response not expected")
 
-			response12, _ := httpCall("GET", fmt.Sprintf("%s/struct2", api.URL))
+			response12, _ := httpCall("GET", fmt.Sprintf("%s/struct2", api.URL()))
 			assert.Equal(t, "<testStruct><a>aaa</a></testStruct>", string(response12), "Response not expected")
 			err = xml.Unmarshal(response11, &s)
 		}
@@ -157,11 +163,33 @@ func TestClientStruct(t *testing.T) {
 		assert.Equal(t, "aaa", s.A, "Data not unmarshalled correctly")
 		assert.Equal(t, 111, s.B, "Data not unmarshalled correctly")
 
-		_, res := httpCall("POST", fmt.Sprintf("%s/hello", api.URL))
+		_, res := httpCall("POST", fmt.Sprintf("%s/hello", api.URL()))
 		assert.Equal(t, http.StatusCreated, res.StatusCode, "StatusCode mismatch")
 
 		api.Stop()
 	}
+}
+
+func TestClientRAW(t *testing.T) {
+
+	type localStruct struct {
+		Name    string `json:"name"`
+		Surname string `json:"surname"`
+	}
+
+	api := NewAPIMock(true, logrus.New(), "json")
+	api.AddMock(structRAW)
+	assert.Len(t, api.URIMocks, 1, "It must have 4 URIMocks defined")
+	api.Start()
+
+	response, _ := httpCall("GET", fmt.Sprintf("%s/raw", api.URL()))
+
+	var l localStruct
+	err := json.Unmarshal(response, &l)
+	assert.Nil(t, err)
+	assert.Equal(t, "someName", l.Name)
+	assert.Equal(t, "someSurname", l.Surname)
+
 }
 
 // Test helpers

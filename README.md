@@ -1,8 +1,7 @@
 [![Build Status](https://travis-ci.org/fernandezvara/apimock.svg?branch=master)](https://travis-ci.org/fernandezvara/apimock)
 [![GoDoc](https://godoc.org/github.com/fernandezvara/apimock?status.png)](https://godoc.org/github.com/fernandezvara/apimock)
 [![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/fernandezvara/apimock)
-[![Coverage Status](https://coveralls.io/repos/fernandezvara/apimock/badge.svg?branch=master)](https://coveralls.io/r/fernandezvara/apimock?branch=master)
-
+[![Coverage Status](https://coveralls.io/repos/fernandezvara/apimock/badge.svg?branch=master&service=github)](https://coveralls.io/github/fernandezvara/apimock?branch=master)
 # apimock
 
 *Simple API mocker helper for tests*
@@ -12,7 +11,7 @@ This library allows to mock easily any API to use in our test.
 
 Normally when creating an API client we need to access many times, so instancing a local api mock will allow us to override problems like rate limiting, double asset creations or just submit any data incorrectly.
 
-API mocks allows to pass any interface decodeable by json or xml unmarshallers.
+API mocks allows to pass any interface decodeable by JSON or XML unmarshallers, or RAW responses.
 
 ## Simple usage:
 
