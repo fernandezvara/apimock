@@ -1,15 +1,3 @@
-# apimock
-Simple API mocker helper for tests
-
-This library allows to mock easily any API to use in our test.
-
-Normally when creating an API client we need to access many times, so instancing a local api mock will allow us to override problems like rate limiting, double asset creations or just submit any data incorrectly.
-
-API mocks allows to pass any interface decodeable by json or xml unmarshallers.
-
-## Simple usage:
-
-```
 package main
 
 import (
@@ -61,6 +49,3 @@ func isErr(err error) {
 		fmt.Println(err)
 	}
 }
-```
-
-*Some more samples on the `/examples` folder.

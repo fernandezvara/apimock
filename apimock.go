@@ -31,9 +31,10 @@ type APIMock struct {
 
 // URIMock represents a API call and its response
 type URIMock struct {
-	Method   string
-	URI      string
-	Response interface{}
+	Method     string
+	URI        string
+	StatusCode int
+	Response   interface{}
 }
 
 // ErrorMessage is the struct to format error messages returned by API
@@ -68,18 +69,19 @@ func (a *APIMock) createRouter() *mux.Router {
 	r := mux.NewRouter()
 
 	for _, mock := range a.URIMocks {
+		// must be locals
 		lMethod := mock.Method
 		lURI := mock.URI
 		lResponse := mock.Response
+		lStatusCode := mock.StatusCode
 		a.Log.WithFields(logrus.Fields{
 			"method": lMethod,
 			"route":  lURI,
 		}).Info("Registering HTTP route")
 		wrap := func(w http.ResponseWriter, r *http.Request) {
 			a.Log.WithFields(logrus.Fields{"service": "apiMock", "method": r.Method, "uri": r.RequestURI, "ip": r.RemoteAddr}).Info("HTTP request received")
-			if a.CORSEnabled {
-				writeCorsHeaders(w, r)
-			}
+			writeHeaders(w, r, a.CORSEnabled, a.Type, lStatusCode)
+
 			if a.Type == "json" {
 				json.NewEncoder(w).Encode(lResponse)
 			}
@@ -89,10 +91,7 @@ func (a *APIMock) createRouter() *mux.Router {
 		}
 		wrapOptions := func(w http.ResponseWriter, r *http.Request) {
 			a.Log.WithFields(logrus.Fields{"service": "apiMock", "method": "OPTIONS", "uri": r.RequestURI, "ip": r.RemoteAddr}).Info("HTTP request received")
-			if a.CORSEnabled {
-				writeCorsHeaders(w, r)
-			}
-			w.WriteHeader(http.StatusOK)
+			writeHeaders(w, r, a.CORSEnabled, a.Type, http.StatusOK)
 		}
 		// add the new route
 		r.Path(mock.URI).Methods(mock.Method).HandlerFunc(wrap)
@@ -102,10 +101,19 @@ func (a *APIMock) createRouter() *mux.Router {
 	return r
 }
 
-func writeCorsHeaders(w http.ResponseWriter, r *http.Request) {
-	w.Header().Add("Access-Control-Allow-Origin", "*")
-	w.Header().Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
-	w.Header().Add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+func writeHeaders(w http.ResponseWriter, r *http.Request, write bool, _type string, statusCode int) {
+	if write == true {
+		w.Header().Add("Access-Control-Allow-Origin", "*")
+		w.Header().Add("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
+		w.Header().Add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS")
+	}
+	switch _type {
+	case "json":
+		w.Header().Add("Content-Type", "application/json")
+	case "xml":
+		w.Header().Add("Content-Type", "application/xml")
+	}
+	w.WriteHeader(statusCode)
 }
 
 func verifyType(t string) string {

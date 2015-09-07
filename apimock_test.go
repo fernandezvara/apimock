@@ -19,14 +19,23 @@ type testStruct struct {
 }
 
 var helloMock = &URIMock{
-	Method:   "GET",
-	URI:      "/hello",
-	Response: "world",
+	Method:     "GET",
+	URI:        "/hello",
+	StatusCode: http.StatusOK,
+	Response:   "world",
+}
+
+var helloPostMock = &URIMock{
+	Method:     "POST",
+	URI:        "/hello",
+	StatusCode: 201,
+	Response:   "",
 }
 
 var structMock = &URIMock{
-	Method: "GET",
-	URI:    "/struct1",
+	Method:     "GET",
+	URI:        "/struct1",
+	StatusCode: http.StatusOK,
 	Response: testStruct{
 		A: "aaa",
 		B: 111,
@@ -34,8 +43,9 @@ var structMock = &URIMock{
 }
 
 var structMock2 = &URIMock{
-	Method: "GET",
-	URI:    "/struct2",
+	Method:     "GET",
+	URI:        "/struct2",
+	StatusCode: http.StatusOK,
 	Response: testStruct{
 		A: "aaa",
 	},
@@ -119,20 +129,22 @@ func TestClientStruct(t *testing.T) {
 
 		api := NewAPIMock(true, logrus.New(), _type)
 		api.AddMock(helloMock)
+		api.AddMock(helloPostMock)
 		api.AddMock(structMock)
 		api.AddMock(structMock2)
-		assert.Len(t, api.URIMocks, 3, "It must have 1 URIMocks defined")
+		assert.Len(t, api.URIMocks, 4, "It must have 4 URIMocks defined")
 		api.Start()
 
 		var s testStruct
-		if _type == "json" {
+		switch _type {
+		case "json":
 			response11, _ := httpCall("GET", fmt.Sprintf("%s/struct1", api.URL))
 			assert.Equal(t, "{\"a\":\"aaa\",\"b\":111}\n", string(response11), "Response not expected")
 
 			response12, _ := httpCall("GET", fmt.Sprintf("%s/struct2", api.URL))
 			assert.Equal(t, "{\"a\":\"aaa\"}\n", string(response12), "Response not expected")
 			err = json.Unmarshal(response11, &s)
-		} else {
+		case "xml":
 			response11, _ := httpCall("GET", fmt.Sprintf("%s/struct1", api.URL))
 			assert.Equal(t, "<testStruct><a>aaa</a><b>111</b></testStruct>", string(response11), "Response not expected")
 
@@ -140,13 +152,19 @@ func TestClientStruct(t *testing.T) {
 			assert.Equal(t, "<testStruct><a>aaa</a></testStruct>", string(response12), "Response not expected")
 			err = xml.Unmarshal(response11, &s)
 		}
+
 		assert.Nil(t, err, "It unmarshals without error")
 		assert.Equal(t, "aaa", s.A, "Data not unmarshalled correctly")
 		assert.Equal(t, 111, s.B, "Data not unmarshalled correctly")
+
+		_, res := httpCall("POST", fmt.Sprintf("%s/hello", api.URL))
+		assert.Equal(t, http.StatusCreated, res.StatusCode, "StatusCode mismatch")
+
 		api.Stop()
 	}
 }
 
+// Test helpers
 func httpCall(_type, uri string) ([]byte, *http.Response) {
 	buf := new(bytes.Buffer)
 	httpClient := new(http.Client)
