@@ -38,11 +38,20 @@ func main() {
 		Response:   "world",
 	}
 
+	// adds a mock using an struct
 	a.AddMock(&route1)
+
+	// adds a mock one liner (you can pass a raw message)
+	a.Add("GET", "/hi", http.StatusOK, []byte("ho"))
+
 	a.Start()
 	defer a.Stop()
 
 	b, r := httpCall("GET", fmt.Sprintf("%s/hello", a.URL))
+	fmt.Println("response:", string(b))
+	fmt.Println("status  :", r.StatusCode)
+
+	b, r = httpCall("GET", fmt.Sprintf("%s/hi", a.URL))
 	fmt.Println("response:", string(b))
 	fmt.Println("status  :", r.StatusCode)
 }

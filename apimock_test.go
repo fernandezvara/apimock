@@ -171,7 +171,6 @@ func TestClientStruct(t *testing.T) {
 }
 
 func TestClientRAW(t *testing.T) {
-
 	type localStruct struct {
 		Name    string `json:"name"`
 		Surname string `json:"surname"`
@@ -190,6 +189,17 @@ func TestClientRAW(t *testing.T) {
 	assert.Equal(t, "someName", l.Name)
 	assert.Equal(t, "someSurname", l.Surname)
 
+}
+
+func TestAdd(t *testing.T) {
+	api := NewAPIMock(true, logrus.New(), "json")
+	api.Add("GET", "/hi", 200, []byte("ho"))
+	assert.Len(t, api.URIMocks, 1)
+	api.Start()
+
+	bytes, res := httpCall("GET", fmt.Sprintf("%s/hi", api.URL()))
+	assert.Equal(t, "ho", string(bytes))
+	assert.Equal(t, 200, res.StatusCode)
 }
 
 // Test helpers

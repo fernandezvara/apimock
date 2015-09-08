@@ -66,6 +66,17 @@ func (a *APIMock) AddMock(uriMock *URIMock) {
 	a.URIMocks = append(a.URIMocks, uriMock)
 }
 
+// Add adds a mock avoiding the need of struct creation
+func (a *APIMock) Add(method, uri string, statusCode int, response interface{}) {
+	newURIMock := URIMock{
+		Method:     method,
+		URI:        uri,
+		StatusCode: statusCode,
+		Response:   response,
+	}
+	a.AddMock(&newURIMock)
+}
+
 func (a *APIMock) createRouter() *mux.Router {
 	r := mux.NewRouter()
 
