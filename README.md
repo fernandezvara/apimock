@@ -47,11 +47,11 @@ func main() {
 	a.Start()
 	defer a.Stop()
 
-	b, r := httpCall("GET", fmt.Sprintf("%s/hello", a.URL))
+	b, r := httpCall("GET", fmt.Sprintf("%s/hello", a.URL()))
 	fmt.Println("response:", string(b))
 	fmt.Println("status  :", r.StatusCode)
 
-	b, r = httpCall("GET", fmt.Sprintf("%s/hi", a.URL))
+	b, r = httpCall("GET", fmt.Sprintf("%s/hi", a.URL()))
 	fmt.Println("response:", string(b))
 	fmt.Println("status  :", r.StatusCode)
 }

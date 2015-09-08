@@ -21,16 +21,16 @@ func main() {
 	a.Start()      // start local test server
 	defer a.Stop() // defer stop
 
-	fmt.Println(string(httpCall(fmt.Sprintf("%s%s", a.URL, "/hello"))))
+	fmt.Println(string(httpCall(fmt.Sprintf("%s/hello", a.URL()))))
 
 	// Unmarshal response
 	var t1, t2 tt
 
-	err := json.Unmarshal(httpCall(fmt.Sprintf("%s%s", a.URL, "/struct")), &t1)
+	err := json.Unmarshal(httpCall(fmt.Sprintf("%s/struct", a.URL())), &t1)
 	assert(err)
 	fmt.Println("t1:", t1)
 
-	err = json.Unmarshal(httpCall(fmt.Sprintf("%s%s", a.URL, "/function")), &t2)
+	err = json.Unmarshal(httpCall(fmt.Sprintf("%s/function", a.URL())), &t2)
 	assert(err)
 	fmt.Println("t2:", t2)
 

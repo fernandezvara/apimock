@@ -21,10 +21,15 @@ func main() {
 	}
 
 	a.AddMock(&route1)
+	a.Add("GET", "/hi", 200, []byte("ho"))
 	a.Start()
 	defer a.Stop()
 
-	b, r := httpCall("GET", fmt.Sprintf("%s/hello", a.URL))
+	b, r := httpCall("GET", fmt.Sprintf("%s/hello", a.URL()))
+	fmt.Println("response:", string(b))
+	fmt.Println("status  :", r.StatusCode)
+
+	b, r = httpCall("GET", fmt.Sprintf("%s/hi", a.URL()))
 	fmt.Println("response:", string(b))
 	fmt.Println("status  :", r.StatusCode)
 }
