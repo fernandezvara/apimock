@@ -5,6 +5,8 @@ import (
 	"encoding/xml"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
+	"strings"
 
 	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
@@ -59,6 +61,20 @@ func (a *APIMock) Stop() {
 // URL returns the listener address
 func (a *APIMock) URL() string {
 	return a.server.URL
+}
+
+// Port returns the TCP port where the mock is started
+func (a *APIMock) Port() int {
+	parts := strings.Split(strings.Replace(a.URL(), "/", "", 0), ":")
+	i, _ := strconv.Atoi(parts[len(parts)-1])
+
+	return i
+}
+
+// Protocol returns the protocol used by the APIMock
+func (a *APIMock) Protocol() string {
+	parts := strings.Split(a.URL(), ":")
+	return parts[0]
 }
 
 // AddMock adds a new mock route/Response

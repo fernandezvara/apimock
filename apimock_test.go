@@ -81,6 +81,10 @@ func TestClientStartStop(t *testing.T) {
 	assert.Equal(t, "\"world\"\n", string(response), "It must return the expected result")
 	assert.Equal(t, 200, res.StatusCode, "It must have status code 200")
 	assert.Equal(t, "*", res.Header.Get("Access-Control-Allow-Origin"), "It must have CORS Headers")
+
+	// Test Port() &  Protocol()
+	assert.Equal(t, api.URL(), fmt.Sprintf("%s://127.0.0.1:%d", api.Protocol(), api.Port()))
+
 	api.Stop()
 }
 
