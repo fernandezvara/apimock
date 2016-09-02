@@ -2,6 +2,7 @@
 [![GoDoc](https://godoc.org/github.com/fernandezvara/apimock?status.png)](https://godoc.org/github.com/fernandezvara/apimock)
 [![Go Walker](http://gowalker.org/api/v1/badge)](https://gowalker.org/github.com/fernandezvara/apimock)
 [![Coverage Status](https://coveralls.io/repos/fernandezvara/apimock/badge.svg?branch=master&service=github)](https://coveralls.io/github/fernandezvara/apimock?branch=master)
+[![Build Status](https://drone.io/github.com/fernandezvara/apimock/status.png)](https://drone.io/github.com/fernandezvara/apimock/latest)
 # apimock
 
 *Simple API mocker helper for tests*
