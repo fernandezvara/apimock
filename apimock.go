@@ -13,7 +13,7 @@ import (
 )
 
 // NewAPIMock returns a new instance of the Mock API
-func NewAPIMock(cors bool, log *logrus.Logger, apiType string) *APIMock {
+func NewAPIMock(cors bool, log logrus.FieldLogger, apiType string) *APIMock {
 	return &APIMock{
 		CORSEnabled: cors,
 		Log:         log,
@@ -24,7 +24,7 @@ func NewAPIMock(cors bool, log *logrus.Logger, apiType string) *APIMock {
 // APIMock is the main struct that
 type APIMock struct {
 	CORSEnabled bool
-	Log         *logrus.Logger
+	Log         logrus.FieldLogger
 	Type        string
 	URIMocks    []*URIMock
 	server      *httptest.Server
