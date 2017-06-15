@@ -8,12 +8,17 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/Sirupsen/logrus"
 	"github.com/gorilla/mux"
+	"github.com/sirupsen/logrus"
+)
+
+const (
+	_json = "json"
+	_xml  = "xml"
 )
 
 // NewAPIMock returns a new instance of the Mock API
-func NewAPIMock(cors bool, log *logrus.Logger, apiType string) *APIMock {
+func NewAPIMock(cors bool, log logrus.FieldLogger, apiType string) *APIMock {
 	return &APIMock{
 		CORSEnabled: cors,
 		Log:         log,
@@ -24,7 +29,7 @@ func NewAPIMock(cors bool, log *logrus.Logger, apiType string) *APIMock {
 // APIMock is the main struct that
 type APIMock struct {
 	CORSEnabled bool
-	Log         *logrus.Logger
+	Log         logrus.FieldLogger
 	Type        string
 	URIMocks    []*URIMock
 	server      *httptest.Server
@@ -115,10 +120,10 @@ func (a *APIMock) createRouter() *mux.Router {
 				return
 			}
 
-			if a.Type == "json" {
+			if a.Type == _json {
 				json.NewEncoder(w).Encode(lResponse)
 			}
-			if a.Type == "xml" {
+			if a.Type == _xml {
 				xml.NewEncoder(w).Encode(lResponse)
 			}
 		}
@@ -141,16 +146,16 @@ func writeHeaders(w http.ResponseWriter, r *http.Request, write bool, _type stri
 		w.Header().Add("Access-Control-Allow-Methods", "GET, POST, DELETE, PUT, OPTIONS")
 	}
 	switch _type {
-	case "json":
+	case _json:
 		w.Header().Add("Content-Type", "application/json")
-	case "xml":
+	case _xml:
 		w.Header().Add("Content-Type", "application/xml")
 	}
 	w.WriteHeader(statusCode)
 }
 
 func verifyType(t string) string {
-	if t == "json" || t == "xml" {
+	if t == _json || t == _xml {
 		return t
 	}
 	panic("not allowed API Type!")
