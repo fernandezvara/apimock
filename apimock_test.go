@@ -66,7 +66,7 @@ func TestClient(t *testing.T) {
 	api := NewAPIMock(true, logrus.New(), "json")
 	assert.IsType(t, api, new(APIMock), "It must instance an APIMock struct")
 	assert.Equal(t, api.CORSEnabled, true, "Cors must be TRUE")
-	assert.Equal(t, api.Log, logrus.New(), "Logger must be set correctly")
+	assert.IsType(t, api.Log, &logrus.Logger{}, "Logger must be set correctly")
 	assert.Equal(t, api.Type, "json", "Type must be 'json'")
 }
 
